@@ -76,6 +76,9 @@ button{cursor:pointer}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:none;border:1px solid var(--linea);background:var(--papel);border-radius:999px;padding:7px 13px;font-size:14px;white-space:nowrap}
 .tab[aria-current="true"]{background:var(--bordo);border-color:var(--bordo);color:#fff}
+/* Precio especial: pestaña y etiqueta en cartón, para que se vean primero */
+.tab.especial{background:var(--carton);border-color:var(--carton);color:var(--bordo-hondo);font-weight:600}
+.tab.especial[aria-current="true"]{background:var(--bordo-hondo);border-color:var(--bordo-hondo);color:var(--carton)}
 
 /* ---------- carta ---------- */
 main{padding-bottom:40px}
@@ -96,6 +99,8 @@ main.con-pedido{padding-bottom:110px}
 .etiquetas{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .et{font-size:12px;font-weight:600;line-height:1.2;padding:3px 8px;border-radius:999px;border:1px solid var(--bordo);color:var(--bordo)}
 .et.inmediata{background:var(--olivo);border-color:var(--olivo);color:#fff}
+.et.especial{background:var(--carton);border-color:var(--carton);color:var(--bordo-hondo)}
+.seccion .nota{color:var(--tenue);font-size:14px;margin:0 0 6px}
 .precios{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:10px;font-variant-numeric:tabular-nums}
 .p-suelta{font-size:14px;color:var(--tenue)}
 .p-suelta b{font-size:21px;font-weight:700;font-variation-settings:"wdth" 85;color:var(--texto);margin-right:4px}
@@ -329,6 +334,8 @@ legend{font-weight:700;margin-bottom:8px;padding:0}
   const ORDEN_BODEGAS = ["Nieto Senetiner", "Ruca Malen", "Cadus", "Viña Cobos", "Etchart", "Aimé", "Lira", "Cocinero"];
 
   let D = null, PORID = {};
+  const ESPECIAL = "Precio especial";   // la etiqueta que pone el sistema (sistema/alertas.py)
+  const esEspecial = p => (p.etiquetas || []).includes(ESPECIAL);
   const est = { q: "", bodegas: new Set(), cepas: new Set(), max: null, inmediata: false, orden: "precio" };
   let pedido = leer("pedido-v1", {});
 
@@ -408,15 +415,21 @@ legend{font-weight:700;margin-bottom:8px;padding:0}
     const cont = $("#carta");
     cont.innerHTML = "";
     const presentes = [];
-    for (const s of D.secciones) {
-      const items = lista.filter(p => p.seccion === s.id).sort(comparar);
+    // "Precio especial" va primero y repite esos productos (siguen también en su sección).
+    // Con búsqueda o filtros no se muestra, para no ver cada producto dos veces.
+    const sinFiltros = !est.q && !est.bodegas.size && !est.cepas.size && !est.max && !est.inmediata;
+    const especiales = sinFiltros ? lista.filter(esEspecial).sort(comparar) : [];
+    const grupos = (especiales.length ? [[{ id: "especiales", nombre: ESPECIAL }, especiales]] : [])
+      .concat(D.secciones.map(s => [s, lista.filter(p => p.seccion === s.id).sort(comparar)]));
+    for (const [s, items] of grupos) {
       if (!items.length) continue;
       presentes.push(s);
       const [uno, varios] = SUST[s.id] || ["producto", "productos"];
       const sec = document.createElement("section");
       sec.className = "seccion"; sec.id = "s-" + s.id; sec.dataset.sec = s.id;
       sec.setAttribute("aria-labelledby", "h-" + s.id);
-      sec.innerHTML = `<h2 id="h-${s.id}">${esc(s.nombre)}</h2><p class="cuenta">${items.length} ${items.length === 1 ? uno : varios}</p><ul class="lista"></ul>`;
+      const nota = s.id === "especiales" ? '<p class="nota">También los encontrás en su sección.</p>' : "";
+      sec.innerHTML = `<h2 id="h-${s.id}">${esc(s.nombre)}</h2><p class="cuenta">${items.length} ${items.length === 1 ? uno : varios}</p>${nota}<ul class="lista"></ul>`;
       const ul = sec.querySelector(".lista");
       items.forEach(p => ul.appendChild(fila(p)));
       cont.appendChild(sec);
@@ -432,7 +445,7 @@ legend{font-weight:700;margin-bottom:8px;padding:0}
   function etiquetas(p) {
     const ets = [];
     if (p.entrega_inmediata) ets.push('<span class="et inmediata">Entrega inmediata</span>');
-    (p.etiquetas || []).filter(e => e !== "Promo").forEach(e => ets.push(`<span class="et">${esc(e)}</span>`));
+    (p.etiquetas || []).filter(e => e !== "Promo").forEach(e => ets.push(`<span class="et${e === ESPECIAL ? " especial" : ""}">${esc(e)}</span>`));
     return ets.length ? `<span class="etiquetas">${ets.join("")}</span>` : "";
   }
   function nombreUnico(p) {
@@ -476,7 +489,7 @@ legend{font-weight:700;margin-bottom:8px;padding:0}
   let obs = null;
   function renderTabs(presentes) {
     const t = $("#tabs");
-    t.innerHTML = presentes.map(s => `<button type="button" class="tab" role="listitem" data-sec="${s.id}">${esc(s.nombre)}</button>`).join("");
+    t.innerHTML = presentes.map(s => `<button type="button" class="tab${s.id === "especiales" ? " especial" : ""}" role="listitem" data-sec="${s.id}">${esc(s.nombre)}</button>`).join("");
     t.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => irA(b.dataset.sec)));
     marcarTab(presentes[0] && presentes[0].id);
   }
