@@ -80,6 +80,37 @@ button{cursor:pointer}
 .tab.especial{background:var(--carton);border-color:var(--carton);color:var(--bordo-hondo);font-weight:600}
 .tab.especial[aria-current="true"]{background:var(--bordo-hondo);border-color:var(--bordo-hondo);color:var(--carton)}
 
+/* Bodegas: botón al lado de las secciones (celular) y columna fija a la izquierda (compu) */
+.tabs-fila{display:flex;align-items:flex-start;gap:6px}
+.tabs-fila .tabs{flex:1;min-width:0}
+.btn-bodegas{flex:none;display:inline-flex;align-items:center;gap:6px;max-width:48vw;border:1px solid var(--bordo);background:var(--papel);color:var(--bordo);border-radius:999px;padding:7px 12px 7px 10px;font-size:14px;font-weight:600;white-space:nowrap}
+.btn-bodegas svg{flex:none}
+.btn-bodegas span{overflow:hidden;text-overflow:ellipsis}
+.btn-bodegas[data-activa]{background:var(--bordo);color:#fff}
+.lateral-fijo{display:none}
+.bods{display:grid}
+.bods-intro{margin:0 12px 6px;font-size:14px;color:var(--tenue)}
+.bod{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:0 10px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--linea);border-left:3px solid transparent;padding:11px 6px 11px 12px}
+.bod:hover .bod-nombre{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.bod-nombre{font-family:var(--f-display);font-size:19px;line-height:1.2;color:var(--texto)}
+.bod-cuenta{font-size:14px;color:var(--tenue);font-variant-numeric:tabular-nums}
+.bod-mas{grid-column:1 / -1;font-size:13px;color:var(--tenue);margin-top:2px}
+.nw{white-space:nowrap}
+.bod.todas .bod-nombre{font-family:var(--f-texto);font-size:15px;font-weight:600;color:var(--bordo)}
+.bod[aria-current="true"]{border-left-color:var(--bordo);background:var(--niebla)}
+.bod[aria-current="true"] .bod-nombre{color:var(--bordo)}
+.cab-bodega{padding:22px 0 4px;border-bottom:1px solid var(--linea)}
+.cab-bodega .sobre{margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tenue)}
+.cab-bodega h2{font-family:var(--f-display);font-weight:400;font-size:32px;line-height:1.1;margin:2px 0 4px;color:var(--bordo);text-wrap:balance}
+.cab-bodega .cuenta{margin:0}
+@media (min-width:1200px){
+  :root{--ancho:1240px}
+  .cuerpo{display:grid;grid-template-columns:232px minmax(0,1fr);column-gap:44px;align-items:start}
+  .lateral-fijo{display:block;position:sticky;top:118px;max-height:calc(100vh - 130px);overflow:auto;padding:20px 0}
+  .lateral-fijo h2{font-family:var(--f-display);font-weight:400;font-size:22px;color:var(--bordo);margin:0 0 6px 15px}
+  .btn-bodegas{display:none}
+}
+
 /* ---------- carta ---------- */
 main{padding-bottom:40px}
 main.con-pedido{padding-bottom:110px}
@@ -138,6 +169,11 @@ dialog.hoja{margin:auto auto 0;border-radius:16px 16px 0 0}
 @media (min-width:640px){dialog.hoja{margin:auto;border-radius:16px}}
 @keyframes subir{from{transform:translateY(28px);opacity:.4}}
 dialog[open]{animation:subir .22s ease-out}
+/* Panel de bodegas en el celular: entra desde la izquierda y ocupa todo el alto */
+dialog.lateral{margin:0 auto 0 0;width:min(86vw,360px);height:100%;max-height:none;border-radius:0 16px 16px 0}
+dialog.lateral[open]{display:flex;flex-direction:column;animation:entrar .22s ease-out}
+@keyframes entrar{from{transform:translateX(-40px);opacity:.4}}
+.lateral .hoja-cuerpo{flex:1;padding:0 8px 24px}
 .hoja-cab{position:sticky;top:0;background:var(--papel);display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px;z-index:1}
 .hoja-cab h3{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0;color:var(--bordo)}
 .cerrar{width:40px;height:40px;border-radius:50%;border:1px solid var(--linea);background:var(--papel);font-size:22px;line-height:1;margin-left:auto}
@@ -196,7 +232,7 @@ legend{font-weight:700;margin-bottom:8px;padding:0}
 .edad .no{background:var(--papel);border:1px solid var(--linea);border-radius:10px;padding:12px 16px}
 
 @media (prefers-reduced-motion:reduce){
-  dialog[open],.barra-pedido.latido p{animation:none}
+  dialog[open],dialog.lateral[open],.barra-pedido.latido p{animation:none}
   html{scroll-behavior:auto}
 }
 </style>
@@ -228,11 +264,23 @@ legend{font-weight:700;margin-bottom:8px;padding:0}
       </label>
       <button class="btn-filtros" id="btn-filtros" type="button">Filtrar</button>
     </div>
-    <div class="tabs" id="tabs" role="list"></div>
+    <div class="tabs-fila">
+      <button class="btn-bodegas" id="btn-bodegas" type="button" aria-haspopup="dialog">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10c1.4 2.8 2 5.8 2 9s-.6 6.2-2 9H7c-1.4-2.8-2-5.8-2-9s.6-6.2 2-9z"/><path d="M5.4 8h13.2M5.4 16h13.2"/></svg>
+        <span id="btn-bodegas-txt">Bodegas</span>
+      </button>
+      <div class="tabs" id="tabs" role="list"></div>
+    </div>
   </div>
 </nav>
 
-<main id="carta" class="contenedor" aria-live="polite"><p class="vacio">Cargando la carta…</p></main>
+<div class="cuerpo contenedor">
+  <aside class="lateral-fijo" aria-labelledby="bl-titulo">
+    <h2 id="bl-titulo">Bodegas</h2>
+    <div class="bods"></div>
+  </aside>
+  <main id="carta" aria-live="polite"><p class="vacio">Cargando la carta…</p></main>
+</div>
 
 <footer class="pie">
   <div class="contenedor">
@@ -307,6 +355,14 @@ legend{font-weight:700;margin-bottom:8px;padding:0}
   </div>
 </dialog>
 
+<dialog class="lateral" id="bodegas" aria-labelledby="b-titulo">
+  <div class="hoja-cab"><h3 id="b-titulo">Bodegas</h3><button class="cerrar" type="button" data-cerrar aria-label="Cerrar">×</button></div>
+  <div class="hoja-cuerpo">
+    <p class="bods-intro">Elegí una para ver solo sus vinos.</p>
+    <div class="bods"></div>
+  </div>
+</dialog>
+
 <dialog id="edad" aria-labelledby="e-titulo">
   <div class="edad" id="edad-cuerpo">
     <h3 id="e-titulo">Antes de entrar</h3>
@@ -336,6 +392,12 @@ legend{font-weight:700;margin-bottom:8px;padding:0}
   let D = null, PORID = {};
   const ESPECIAL = "Precio especial";   // la etiqueta que pone el sistema (sistema/alertas.py)
   const esEspecial = p => (p.etiquetas || []).includes(ESPECIAL);
+  // Bodegas. Las cajas mix traen varias en el mismo campo ("Nieto Senetiner, Ruca Malen y Cadus"):
+  // se separan para que la caja aparezca en cada una.
+  const bodegasDe = p => (p.bodega || "").split(/\s*,\s*|\s+y\s+/).filter(Boolean);
+  const slug = s => norm(s).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  const CORTO = { tintos: "tintos", blancos: "blancos", rosados: "rosados", espumantes: "espumantes", cajas: "cajas mix", regalos: "regalos", cocktails: "cocktails", aceites: "aceites" };
+  let BODEGAS = [], NOMBRES = [];
   const est = { q: "", bodegas: new Set(), cepas: new Set(), max: null, inmediata: false, orden: "precio" };
   let pedido = leer("pedido-v1", {});
 
@@ -383,6 +445,9 @@ legend{font-weight:700;margin-bottom:8px;padding:0}
     $("#txt-pago").textContent = D.texto_pago || "";
     $("#localidad").innerHTML = (D.localidades || []).map(l => `<option>${esc(l)}</option>`).join("") + '<option value="otra">Otra localidad</option>';
     armarFiltros();
+    armarBodegas();
+    const delLink = bodegaDelLink();   // link directo a una bodega: .../#bodega=ruca-malen
+    if (delLink) marcarChips(delLink);
     conectar();
     render();
     actualizarBarra(false);
@@ -395,7 +460,7 @@ legend{font-weight:700;margin-bottom:8px;padding:0}
     return D.productos.filter(p => {
       const txt = norm([p.bodega, p.nombre, p.cepa, p.presentacion, p.anada].join(" "));
       if (palabras.some(w => !txt.includes(w))) return false;
-      if (est.bodegas.size && !est.bodegas.has(p.bodega)) return false;
+      if (est.bodegas.size && !bodegasDe(p).some(b => est.bodegas.has(b))) return false;
       if (est.cepas.size && !est.cepas.has(grupoCepa(p))) return false;
       if (est.max && precioRef(p) > est.max) return false;
       if (est.inmediata && !p.entrega_inmediata) return false;
@@ -434,12 +499,16 @@ legend{font-weight:700;margin-bottom:8px;padding:0}
       items.forEach(p => ul.appendChild(fila(p)));
       cont.appendChild(sec);
     }
+    const activa = est.bodegas.size === 1 ? [...est.bodegas][0] : null;
+    if (activa && presentes.length) cont.prepend(cabeceraBodega(activa, lista.length));
     if (!presentes.length) {
       cont.innerHTML = `<div class="vacio"><p>No hay productos que coincidan con tu búsqueda o tus filtros.</p><button class="btn-texto" type="button" id="limpiar-todo">Limpiar búsqueda y filtros</button></div>`;
       $("#limpiar-todo").addEventListener("click", () => { limpiarFiltros(); $("#q").value = ""; est.q = ""; render(); });
     }
     renderTabs(presentes);
     observarSecciones();
+    marcarBodegas();
+    sincronizarLink();
   }
   function meta(p) { return p.anada ? `${p.presentacion}, cosecha ${p.anada}` : p.presentacion; }
   function etiquetas(p) {
@@ -515,6 +584,78 @@ legend{font-weight:700;margin-bottom:8px;padding:0}
     document.querySelectorAll(".seccion").forEach(s => obs.observe(s));
   }
 
+  /* ---------------- bodegas (panel lateral) ---------------- */
+  function armarBodegas() {
+    const m = new Map();
+    for (const p of D.productos) {
+      if (p.seccion === "aceites") continue;   // el panel es de bodegas; los aceites tienen su sección
+      for (const b of bodegasDe(p)) {
+        const x = m.get(b) || { nombre: b, n: 0, desde: Infinity, secs: new Set() };
+        x.n++; x.secs.add(p.seccion);
+        const pr = precioRef(p);
+        if (pr != null && pr < x.desde) x.desde = pr;
+        m.set(b, x);
+      }
+    }
+    const orden = D.secciones.map(s => s.id);
+    BODEGAS = [...m.values()].sort((a, b) => b.n - a.n || a.nombre.localeCompare(b.nombre, "es"));
+    NOMBRES = [...new Set(D.productos.flatMap(bodegasDe))];
+    const html = '<button type="button" class="bod todas" data-bodega=""><span class="bod-nombre">Todas las bodegas</span></button>' +
+      BODEGAS.map(b => `<button type="button" class="bod" data-bodega="${esc(b.nombre)}">
+        <span class="bod-nombre">${esc(b.nombre)}</span><span class="bod-cuenta">${b.n}<span class="oculto"> productos</span></span>
+        <span class="bod-mas">${esc(resumen(orden.filter(id => b.secs.has(id))))}${isFinite(b.desde) ? ` · <span class="nw">desde ${plata(b.desde)}</span>` : ""}</span></button>`).join("");
+    document.querySelectorAll(".bods").forEach(c => c.innerHTML = html);
+  }
+  function resumen(ids) {
+    const t = ids.map(id => CORTO[id] || id);
+    const s = t.length > 3 ? `${t.slice(0, 3).join(", ")} y más` : t.length > 1 ? `${t.slice(0, -1).join(", ")} y ${t[t.length - 1]}` : (t[0] || "");
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+  function marcarBodegas() {
+    const n = est.bodegas.size, activa = n === 1 ? [...est.bodegas][0] : null;
+    document.querySelectorAll(".bod").forEach(b => b.setAttribute("aria-current", String(b.dataset.bodega ? b.dataset.bodega === activa : n === 0)));
+    const btn = $("#btn-bodegas");
+    btn.toggleAttribute("data-activa", n > 0);
+    $("#btn-bodegas-txt").textContent = activa || (n ? `Bodegas (${n})` : "Bodegas");
+    if (activa) btn.setAttribute("aria-label", `Bodegas: ${activa}`); else btn.removeAttribute("aria-label");
+  }
+  function cabeceraBodega(nombre, visibles) {
+    const suyos = D.productos.filter(p => bodegasDe(p).includes(nombre));
+    const desde = Math.min(...suyos.map(precioRef).filter(x => x != null));
+    const cuantos = visibles === suyos.length ? suyos.length : `${visibles} de ${suyos.length}`;
+    const h = document.createElement("header");
+    h.className = "cab-bodega";
+    h.innerHTML = `<p class="sobre">${BODEGAS.some(b => b.nombre === nombre) ? "Bodega" : "Marca"}</p>
+      <h2>${esc(nombre)}</h2>
+      <p class="cuenta">${cuantos} en la carta${isFinite(desde) ? ` · <span class="nw">desde ${plata(desde)}</span>` : ""}</p>
+      <button class="btn-texto" type="button">Ver todas las bodegas</button>`;
+    h.querySelector("button").addEventListener("click", () => elegirBodega(null, true));
+    return h;
+  }
+  // El link refleja la bodega elegida, para poder compartirla: https://.../#bodega=ruca-malen
+  function linkActual() { return est.bodegas.size === 1 ? "#bodega=" + slug([...est.bodegas][0]) : ""; }
+  function sincronizarLink() {
+    const url = linkActual();
+    if (url !== location.hash) history.replaceState(null, "", url || location.pathname + location.search);
+  }
+  function bodegaDelLink() {
+    const m = /^#bodega=([a-z0-9-]+)$/.exec(location.hash);
+    return (m && NOMBRES.find(n => slug(n) === m[1])) || null;
+  }
+  function marcarChips(nombre) {
+    document.querySelectorAll("#f-bodegas input").forEach(i => i.checked = i.value === nombre);
+    leerFiltros();
+  }
+  // Elegir una bodega es como entrar a una sección: queda en el historial y "atrás" vuelve a toda la carta.
+  function elegirBodega(nombre, apilar) {
+    marcarChips(nombre);
+    const url = linkActual();
+    if (apilar && url !== location.hash) history.pushState(null, "", url || location.pathname + location.search);
+    render();
+    const arriba = $("#carta").offsetTop - 120;
+    if (scrollY > arriba) window.scrollTo({ top: Math.max(0, arriba), behavior: "auto" });
+  }
+
   /* ---------------- ficha ---------------- */
   function abrirFicha(p) {
     const u = UNIDAD[p.unidad] || UNIDAD.botella;
@@ -529,6 +670,10 @@ legend{font-weight:700;margin-bottom:8px;padding:0}
                  opcion(p, "caja", etiquetaCaja(p), plata(p.precio_caja), `${plata(cu)} c/u`, true);
     }
     const plazo = p.entrega_inmediata ? "Entrega inmediata: lo tenemos en stock." : "Entrega en 5 a 10 días.";
+    const suyas = bodegasDe(p);
+    const verMas = suyas.length === 1 && !(est.bodegas.size === 1 && est.bodegas.has(suyas[0])) &&
+      D.productos.some(x => x !== p && bodegasDe(x).includes(suyas[0]))
+      ? `<button class="btn-texto" type="button" id="ver-bodega">Ver más de ${esc(suyas[0])}</button>` : "";
     $("#ficha-cuerpo").innerHTML = `
       ${p.img ? `<img class="ficha-foto" src="${esc(p.img)}" alt="${esc(p.nombre)}" width="200" height="200">` : ""}
       <p class="bodega">${esc(p.bodega)}</p>
@@ -537,7 +682,10 @@ legend{font-weight:700;margin-bottom:8px;padding:0}
       ${etiquetas(p)}
       <div class="desc">${desc}${cont}</div>
       <div class="opciones">${opciones}</div>
-      <p class="plazo">${plazo}</p>`;
+      <p class="plazo">${plazo}</p>
+      ${verMas}`;
+    const vb = $("#ver-bodega");
+    if (vb) vb.addEventListener("click", () => { $("#ficha").close(); elegirBodega(suyas[0], true); });
     $("#ficha-cuerpo").querySelectorAll(".btn-agregar").forEach(b => b.addEventListener("click", () => {
       agregar(p.id, b.dataset.tipo);
       b.dataset.ok = ""; b.textContent = "Agregado";
@@ -623,7 +771,7 @@ legend{font-weight:700;margin-bottom:8px;padding:0}
   /* ---------------- filtros ---------------- */
   function armarFiltros() {
     const cuenta = (arr) => arr.reduce((m, x) => (x && m.set(x, (m.get(x) || 0) + 1), m), new Map());
-    const bod = [...cuenta(D.productos.map(p => p.bodega)).entries()].filter(([b]) => !b.includes(",") && !b.includes(" y ")).sort((a, b) => b[1] - a[1]);
+    const bod = [...cuenta(D.productos.flatMap(bodegasDe)).entries()].sort((a, b) => b[1] - a[1]);
     $("#f-bodegas").innerHTML = bod.map(([b]) => `<label class="chip"><input type="checkbox" value="${esc(b)}"><span>${esc(b)}</span></label>`).join("");
     const cep = [...cuenta(D.productos.map(grupoCepa)).entries()].filter(([, n]) => n >= 2).sort((a, b) => b[1] - a[1]);
     $("#f-cepas").innerHTML = cep.map(([c]) => `<label class="chip"><input type="checkbox" value="${esc(c)}"><span>${esc(c)}</span></label>`).join("");
@@ -666,6 +814,18 @@ legend{font-weight:700;margin-bottom:8px;padding:0}
     $("#aplicar").addEventListener("click", () => { leerFiltros(); render(); $("#filtros").close(); window.scrollTo({ top: $("#carta").offsetTop - 120, behavior: reducido ? "auto" : "smooth" }); });
     $("#limpiar").addEventListener("click", () => { limpiarFiltros(); render(); });
     $("#ver-pedido").addEventListener("click", () => { renderPedido(); $("#pedido").showModal(); });
+    $("#btn-bodegas").addEventListener("click", () => {
+      $("#bodegas").showModal();
+      const a = $('#bodegas .bod[aria-current="true"]');
+      if (a) a.focus();
+    });
+    document.querySelectorAll(".bods").forEach(c => c.addEventListener("click", e => {
+      const b = e.target.closest(".bod");
+      if (!b) return;
+      if ($("#bodegas").open) $("#bodegas").close();
+      elegirBodega(b.dataset.bodega || null, true);
+    }));
+    window.addEventListener("popstate", () => elegirBodega(bodegaDelLink(), false));
     $("#localidad").addEventListener("change", renderPedido);
     $("#otra").addEventListener("input", renderPedido);
     $("#vaciar").addEventListener("click", () => { pedido = {}; guardar("pedido-v1", pedido); actualizarBarra(false); renderPedido(); });
